@@ -1,4 +1,4 @@
-# My Golang Web App
+# Momentum
 
 ## Overview
 This project is a web application built with Go that serves as a workout generator and logging system. It allows users to retrieve a workout of the day, log their workouts, and track various types of weight training plans.
