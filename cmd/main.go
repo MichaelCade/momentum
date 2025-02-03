@@ -9,8 +9,11 @@ import (
 )
 
 func main() {
-	// Set the DATABASE_URL environment variable for testing purposes
-	os.Setenv("DATABASE_URL", "postgres://postgres:Passw0rd999!@192.168.169.104:5432/momentum?sslmode=disable")
+	// Check if the DATABASE_URL environment variable is set
+	connStr := os.Getenv("DATABASE_URL")
+	if connStr == "" {
+		log.Fatalln("DATABASE_URL environment variable is not set")
+	}
 
 	database.InitDB() // Initialize the database connection
 
