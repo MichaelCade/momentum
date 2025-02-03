@@ -19,6 +19,8 @@ momentum
 │       └── database.go  # Database connection and queries
 ├── web
 │   └── index.html       # Frontend HTML file
+|   └── script.js
+|   └── style.css   
 ├── go.mod               # Module definition and dependencies
 └── README.md            # Project documentation
 ```
