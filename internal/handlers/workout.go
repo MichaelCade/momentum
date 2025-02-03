@@ -5,6 +5,8 @@ import (
 	"log"
 	"momentum/internal/models"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 // GetWorkoutOfTheDay handles the request to get the workout of the day
@@ -135,4 +137,208 @@ func GetLastLoggedWeightsWorkout(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Fetched last logged weights workout: %+v", weightsLog)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(weightsLog)
+}
+
+// Admin Section - Add, Update, Delete, View
+// AddRecord handles the request to add a record to a table
+func AddRecord(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	table := vars["table"]
+
+	var err error
+	switch table {
+	case "workouts":
+		var workout models.Workout
+		if err = json.NewDecoder(r.Body).Decode(&workout); err == nil {
+			err = models.AddWorkout(workout)
+		}
+	case "weights_logs":
+		var weightsLog models.WeightsLog
+		if err = json.NewDecoder(r.Body).Decode(&weightsLog); err == nil {
+			err = models.AddWeightsLog(weightsLog)
+		}
+	case "exercises":
+		var exercise models.Exercise
+		if err = json.NewDecoder(r.Body).Decode(&exercise); err == nil {
+			err = models.AddExercise(exercise)
+		}
+	case "wods":
+		var wod models.WOD
+		if err = json.NewDecoder(r.Body).Decode(&wod); err == nil {
+			err = models.AddWOD(wod)
+		}
+	case "weight_workouts":
+		var weightWorkout models.WeightWorkout
+		if err = json.NewDecoder(r.Body).Decode(&weightWorkout); err == nil {
+			err = models.AddWeightWorkout(weightWorkout)
+		}
+	default:
+		http.Error(w, "Invalid table name", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		log.Printf("Error adding record to %s: %v", table, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+// UpdateRecord handles the request to update a record in a table
+func UpdateRecord(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	table := vars["table"]
+
+	var err error
+	switch table {
+	case "workouts":
+		var workout models.Workout
+		if err = json.NewDecoder(r.Body).Decode(&workout); err == nil {
+			log.Printf("Received update request for workouts: %+v", workout)
+			err = models.UpdateWorkout(workout)
+		}
+	case "weights_logs":
+		var weightsLog models.WeightsLog
+		if err = json.NewDecoder(r.Body).Decode(&weightsLog); err == nil {
+			log.Printf("Received update request for weights_logs: %+v", weightsLog)
+			err = models.UpdateWeightsLog(weightsLog)
+		}
+	case "exercises":
+		var exercise models.Exercise
+		if err = json.NewDecoder(r.Body).Decode(&exercise); err == nil {
+			log.Printf("Received update request for exercises: %+v", exercise)
+			err = models.UpdateExercise(exercise)
+		}
+	case "wods":
+		var wod models.WOD
+		if err = json.NewDecoder(r.Body).Decode(&wod); err == nil {
+			log.Printf("Received update request for wods: %+v", wod)
+			err = models.UpdateWOD(wod)
+		}
+	case "weight_workouts":
+		var weightWorkout models.WeightWorkout
+		if err = json.NewDecoder(r.Body).Decode(&weightWorkout); err == nil {
+			log.Printf("Received update request for weight_workouts: %+v", weightWorkout)
+			err = models.UpdateWeightWorkout(weightWorkout)
+		}
+	default:
+		http.Error(w, "Invalid table name", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		log.Printf("Error updating record in %s: %v", table, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// DeleteRecord handles the request to delete a record from a table
+func DeleteRecord(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	table := vars["table"]
+
+	var id struct {
+		ID int `json:"id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&id); err != nil {
+		log.Printf("Error decoding delete request: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("Received delete request for table %s with ID %d", table, id.ID)
+
+	var err error
+	switch table {
+	case "workouts":
+		err = models.DeleteWorkout(id.ID)
+	case "weights_logs":
+		err = models.DeleteWeightsLog(id.ID)
+	case "exercises":
+		err = models.DeleteExercise(id.ID)
+	case "wods":
+		err = models.DeleteWOD(id.ID)
+	case "weight_workouts":
+		err = models.DeleteWeightWorkout(id.ID)
+	default:
+		http.Error(w, "Invalid table name", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		log.Printf("Error deleting record from %s: %v", table, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// ViewRecords handles the request to view records from a table
+func ViewRecords(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	table := vars["table"]
+
+	var records interface{}
+	var err error
+	switch table {
+	case "workouts":
+		records, err = models.ViewWorkouts()
+	case "weights_logs":
+		records, err = models.ViewWeightsLogs()
+	case "exercises":
+		records, err = models.ViewExercises()
+	case "wods":
+		records, err = models.ViewWODs()
+	case "weight_workouts":
+		records, err = models.ViewWeightWorkouts()
+	default:
+		http.Error(w, "Invalid table name", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		log.Printf("Error viewing records from %s: %v", table, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(records)
+}
+
+// EmptyTable handles the request to empty a table
+func EmptyTable(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	table := vars["table"]
+
+	var err error
+	switch table {
+	case "workouts":
+		err = models.EmptyWorkouts()
+	case "weights_logs":
+		err = models.EmptyWeightsLogs()
+	case "exercises":
+		err = models.EmptyExercises()
+	case "wods":
+		err = models.EmptyWODs()
+	case "weight_workouts":
+		err = models.EmptyWeightWorkouts()
+	default:
+		http.Error(w, "Invalid table name", http.StatusBadRequest)
+		return
+	}
+
+	if err != nil {
+		log.Printf("Error emptying table %s: %v", table, err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

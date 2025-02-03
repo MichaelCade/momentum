@@ -88,13 +88,14 @@ func createSchema() {
 	if count == 0 {
 		initialData := `
         INSERT INTO wods (type, duration, distance, date) VALUES
-        ('walk', 60, 5.0, NOW()),
-        ('run', 30, 5.0, NOW()),
-        ('run', 30, 5.0, NOW()),
-        ('crosstrainer', 30, 5.0, NOW()),
-        ('row', 30, 5.0, NOW()),
-        ('row', 30, 5.0, NOW()),
-        ('bike', 60, 20.0, NOW());
+        ('Walk', 60, 5.0, NOW()),
+        ('Run - Intervals', 30, 5.0, NOW()),
+        ('Run', 30, 5.0, NOW()),
+        ('Crosstrainer', 30, 5.0, NOW()),
+        ('Row - 2 mins on 1 min off', 30, 5.0, NOW()),
+        ('Row - 10 x 500m', 30, 5.0, NOW()),
+        ('Row', 30, 5.0, NOW()),
+        ('Bike', 60, 20.0, NOW());
         `
 		DB.MustExec(initialData)
 	}
@@ -141,21 +142,6 @@ func createSchema() {
 		DB.MustExec(initialData)
 	}
 
-	// Insert sample data into the workouts table if it is empty
-	err = DB.Get(&count, "SELECT COUNT(*) FROM workouts")
-	if err != nil {
-		log.Fatalln("Error checking workouts table:", err)
-	}
-
-	if count == 0 {
-		sampleData := `
-        INSERT INTO workouts (type, duration, distance, date) VALUES
-        ('run', 30, 5.0, NOW()),
-        ('bike', 60, 20.0, NOW()),
-        ('row', 30, 5.0, NOW());
-        `
-		DB.MustExec(sampleData)
-	}
 }
 
 // GetDB returns the database connection

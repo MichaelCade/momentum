@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Momentum Admin Panel</h1>
+    </header>
+    <main>
+        <section id="admin-panel">
+            <h2>Modify Database Tables</h2>
+            <form id="admin-form">
+                <label for="table-name">Table Name:</label>
+                <select id="table-name" name="table-name" required>
+                    <option value="workouts">Logged Cardio</option>
+                    <option value="weights_logs">Logged Weights</option>
+                    <option value="exercises">Logged Weights Detail</option>
+                    <option value="wods">Pre Defined WODs</option>
+                    <option value="weight_workouts">Pre Defined Weights</option>
+                </select>
+
+                <label for="operation">Operation:</label>
+                <select id="operation" name="operation" required>
+                    <option value="add">Add</option>
+                    <option value="update">Update</option>
+                    <option value="delete">Delete</option>
+                </select>
+
+                <div id="fields-container">
+                    <!-- Fields will be dynamically added here based on the selected table and operation -->
+                </div>
+                    <button type="submit">Submit</button>
+                    <button type="button" id="empty-table-button">Empty Table</button>
+            </form>
+            <div id="view-results">
+                <!-- Results of the view operation will be displayed here -->
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Momentum</p>
+    </footer>
+</body>
+</html>

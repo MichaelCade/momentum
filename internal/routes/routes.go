@@ -19,6 +19,13 @@ func InitializeRoutes() *mux.Router {
 	router.HandleFunc("/workout/last/cardio", handlers.GetLastLoggedCardioWorkout).Methods("GET")
 	router.HandleFunc("/workout/last/weights", handlers.GetLastLoggedWeightsWorkout).Methods("GET")
 
+	// Admin routes
+	router.HandleFunc("/admin/add/{table}", handlers.AddRecord).Methods("POST")
+	router.HandleFunc("/admin/update/{table}", handlers.UpdateRecord).Methods("POST")
+	router.HandleFunc("/admin/delete/{table}", handlers.DeleteRecord).Methods("POST")
+	router.HandleFunc("/admin/view/{table}", handlers.ViewRecords).Methods("GET")
+	router.HandleFunc("/admin/empty/{table}", handlers.EmptyTable).Methods("POST")
+
 	// Serve static files from the "web" directory
 	router.PathPrefix("/").Handler(http.FileServer(http.Dir("./web")))
 
