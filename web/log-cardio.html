@@ -5,19 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Log Cardio Workout</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+    <script src="fetchData.js" defer></script>
+    <script src="logCardio.js" defer></script>
 </head>
 <body>
     <header>
         <h1>Momentum</h1>
     </header>
-        <section id="main-menu">
-            <button class="btn" onclick="location.href='index.html'">Home</button>
-            <button class="btn" onclick="location.href='log-cardio.html'">Log Cardio Workout</button>
-            <button class="btn" onclick="location.href='log-weights.html'">Log Weights Workout</button>
-            <button class="btn" onclick="location.href='history.html'">View Workout History</button>
-            <button class="btn" onclick="location.href='admin.html'">Admin Panel</button>
-        </section>
+    <section id="main-menu">
+        <button class="btn" onclick="location.href='index.html'">Home</button>
+        <button class="btn" onclick="location.href='log-cardio.html'">Log Cardio Workout</button>
+        <button class="btn" onclick="location.href='log-weights.html'">Log Weights Workout</button>
+        <button class="btn" onclick="location.href='history.html'">View Workout History</button>
+        <button class="btn" onclick="location.href='admin.html'">Admin Panel</button>
+    </section>
     <main>
         <section id="log-cardio-workout">
             <h2>Log Your Cardio Workout</h2>
@@ -31,8 +32,11 @@
                     <option value="bike">Bike</option>
                 </select>
                 
-                <label for="duration">Duration (minutes):</label>
-                <input type="number" id="duration" name="duration" required>
+                <label for="duration-minutes">Duration (minutes):</label>
+                <input type="number" id="duration-minutes" name="duration-minutes" required>
+                
+                <label for="duration-seconds">Duration (seconds):</label>
+                <input type="number" id="duration-seconds" name="duration-seconds" required>
                 
                 <label for="distance">Distance (KMs):</label>
                 <input type="number" id="distance" name="distance" required>

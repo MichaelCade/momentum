@@ -31,7 +31,7 @@ func createSchema() {
     CREATE TABLE IF NOT EXISTS workouts (
         id SERIAL PRIMARY KEY,
         type VARCHAR(50),
-        duration INT,
+        duration FLOAT, -- Change to FLOAT to store seconds
         distance FLOAT,
         date TIMESTAMP
     );
@@ -39,7 +39,7 @@ func createSchema() {
     CREATE TABLE IF NOT EXISTS workout_logs (
         id SERIAL PRIMARY KEY,
         exercise VARCHAR(50),
-        time FLOAT,
+        time FLOAT, -- Change to FLOAT to store seconds
         distance FLOAT,
         weight FLOAT,
         reps INT,
@@ -65,7 +65,7 @@ func createSchema() {
     CREATE TABLE IF NOT EXISTS wods (
         id SERIAL PRIMARY KEY,
         type VARCHAR(50),
-        duration INT,
+        duration FLOAT, -- Change to FLOAT to store seconds
         distance FLOAT,
         date TIMESTAMP
     );

@@ -5,7 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Momentum</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="fetchData.js" defer></script>
+    <script src="admin.js" defer></script>
+    <script src="index.js" defer></script>
+    <script src="logCardio.js" defer></script>
+    <script src="logWeights.js" defer></script>
+    <script src="chart.js" defer></script>
 </head>
 <body>
     <header>
@@ -25,6 +31,18 @@
                 <!-- Workout of the day will be displayed here -->
             </div>
             <button id="get-workout">Get Workout</button>
+        </section>
+        <section id="cardio-trend">
+            <h2>Cardio Workout Trend</h2>
+            <canvas id="cardioTrendChart"></canvas>
+        </section>
+        <section id="combined-total">
+            <h2>Total Distance Covered by Type</h2>
+            <canvas id="combinedTotalDistanceChart"></canvas>
+        </section>
+        <section id="total-distance">
+            <h2>Per Type Distance Covered</h2>
+            <canvas id="totalDistanceChart"></canvas>
         </section>
     </main>
     <footer>

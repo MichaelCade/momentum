@@ -11,7 +11,7 @@ import (
 type Workout struct {
 	ID       int       `json:"id"`
 	Type     string    `json:"type"`     // Type of workout (e.g., cardio, strength)
-	Duration int       `json:"duration"` // Duration in minutes
+	Duration float64   `json:"duration"` // Duration in seconds
 	Distance float64   `json:"distance"` // Distance in kilometers (if applicable)
 	Date     time.Time `json:"date"`     // Date of the workout
 }
@@ -91,7 +91,7 @@ func SaveWeightsLog(weightsLog WeightsLog) error {
 // FetchLoggedCardioWorkouts retrieves all logged cardio workouts from the database.
 func FetchLoggedCardioWorkouts() ([]Workout, error) {
 	var workouts []Workout
-	err := database.DB.Select(&workouts, "SELECT * FROM workouts WHERE type IN ('run', 'bike', 'row', 'walk', 'crosstrainer') ORDER BY date DESC")
+	err := database.DB.Select(&workouts, "SELECT * FROM workouts WHERE LOWER(type) IN ('run', 'bike', 'row', 'walk', 'crosstrainer') ORDER BY date DESC")
 	if err != nil {
 		log.Printf("Error fetching logged cardio workouts: %v", err)
 		return nil, err

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout History</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
+    <script src="fetchData.js" defer></script>
 </head>
 <body>
     <header>
@@ -107,5 +107,12 @@
     <footer>
         <p>&copy; 2025 Momentum</p>
     </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            fetchLoggedCardioWorkouts();
+            fetchLoggedWeightsWorkouts();
+            fetchLastLoggedWorkouts();
+        });
+    </script>
 </body>
 </html>
