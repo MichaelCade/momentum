@@ -44,8 +44,16 @@ function fetchLoggedWeightsWorkouts() {
             tableBody.innerHTML = '';
             data.forEach(workout => {
                 const row = document.createElement('tr');
+                let details = 'No exercises logged';
+                if (workout.exercises && workout.exercises.length > 0) {
+                    details = workout.exercises.map(ex => {
+                        const setsStr = ex.sets.map(s => `${s.weight}kg x ${s.reps}`).join(', ');
+                        return `<strong>${ex.name}</strong>: ${setsStr}`;
+                    }).join('<br>');
+                }
                 row.innerHTML = `
                     <td>${workout.workout_type}</td>
+                    <td>${details}</td>
                     <td>${new Date(workout.date).toLocaleString()}</td>
                 `;
                 tableBody.appendChild(row);
@@ -79,21 +87,23 @@ function fetchLastLoggedWorkout(workoutType, tableId) {
                 if (weightsLog.exercises && weightsLog.exercises.length > 0) {
                     weightsLog.exercises.forEach(exercise => {
                         const row = document.createElement('tr');
+                        let setsDisplay = 'No sets';
+                        if (exercise.sets && exercise.sets.length > 0) {
+                            setsDisplay = exercise.sets.map(s => `${s.weight}kg x ${s.reps}`).join('<br>');
+                        }
                         row.innerHTML = `
                             <td>${exercise.name}</td>
-                            <td>${exercise.set1}</td>
-                            <td>${exercise.set2}</td>
-                            <td>${exercise.set3}</td>
+                            <td>${setsDisplay}</td>
                             <td>${new Date(weightsLog.date).toLocaleString()}</td>
                         `;
                         tableBody.appendChild(row);
                     });
                 } else {
                     console.log(`No exercises found for ${workoutType} workout.`);
-                    tableBody.innerHTML = '<tr><td colspan="5">No exercises found</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="3">No exercises found</td></tr>';
                 }
             } else {
-                tableBody.innerHTML = '<tr><td colspan="5">No workout found</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="3">No workout found</td></tr>';
             }
         })
         .catch(error => {

@@ -29,9 +29,16 @@ type Exercise struct {
 	ID           int    `json:"id"`
 	WeightsLogID int    `json:"weights_log_id" db:"weights_log_id"`
 	Name         string `json:"name"`
-	Set1         int    `json:"set1"`
-	Set2         int    `json:"set2"`
-	Set3         int    `json:"set3"`
+	Sets         []Set  `json:"sets"`
+}
+
+// Set represents a single set of an exercise.
+type Set struct {
+	ID         int     `json:"id"`
+	ExerciseID int     `json:"exercise_id" db:"exercise_id"`
+	SetNumber  int     `json:"set_number" db:"set_number"`
+	Weight     float64 `json:"weight"`
+	Reps       int     `json:"reps"`
 }
 
 // WOD represents a workout of the day entry in the database.
@@ -79,10 +86,20 @@ func SaveWeightsLog(weightsLog WeightsLog) error {
 	}
 	for _, exercise := range weightsLog.Exercises {
 		exercise.WeightsLogID = weightsLogID
-		_, err := tx.NamedExec(`INSERT INTO exercises (weights_log_id, name, set1, set2, set3) VALUES (:weights_log_id, :name, :set1, :set2, :set3)`, &exercise)
+		var exerciseID int
+		err := tx.QueryRowx(`INSERT INTO exercises (weights_log_id, name) VALUES ($1, $2) RETURNING id`, exercise.WeightsLogID, exercise.Name).Scan(&exerciseID)
 		if err != nil {
 			tx.Rollback()
 			return err
+		}
+		for i, set := range exercise.Sets {
+			set.ExerciseID = exerciseID
+			set.SetNumber = i + 1
+			_, err := tx.NamedExec(`INSERT INTO exercise_sets (exercise_id, set_number, weight, reps) VALUES (:exercise_id, :set_number, :weight, :reps)`, &set)
+			if err != nil {
+				tx.Rollback()
+				return err
+			}
 		}
 	}
 	return tx.Commit()
@@ -99,7 +116,7 @@ func FetchLoggedCardioWorkouts() ([]Workout, error) {
 	return workouts, nil
 }
 
-// FetchLoggedWeightsWorkouts retrieves all logged weights workouts from the database.
+// FetchLoggedWeightsWorkouts retrieves all logged weights workouts from the database with nested exercises and sets.
 func FetchLoggedWeightsWorkouts() ([]WeightsLog, error) {
 	var weightsLogs []WeightsLog
 	err := database.DB.Select(&weightsLogs, "SELECT * FROM weights_logs ORDER BY date DESC")
@@ -107,6 +124,27 @@ func FetchLoggedWeightsWorkouts() ([]WeightsLog, error) {
 		log.Printf("Error fetching logged weights workouts: %v", err)
 		return nil, err
 	}
+
+	for i, logEntry := range weightsLogs {
+		var exercises []Exercise
+		err = database.DB.Select(&exercises, "SELECT * FROM exercises WHERE weights_log_id=$1", logEntry.ID)
+		if err != nil {
+			log.Printf("Error fetching exercises for weights log ID %d: %v", logEntry.ID, err)
+			return nil, err
+		}
+
+		for j, exercise := range exercises {
+			var sets []Set
+			err = database.DB.Select(&sets, "SELECT * FROM exercise_sets WHERE exercise_id=$1 ORDER BY set_number", exercise.ID)
+			if err != nil {
+				log.Printf("Error fetching sets for exercise ID %d: %v", exercise.ID, err)
+				return nil, err
+			}
+			exercises[j].Sets = sets
+		}
+		weightsLogs[i].Exercises = exercises
+	}
+
 	return weightsLogs, nil
 }
 
@@ -153,6 +191,17 @@ func FetchLastLoggedWeightsWorkout(workoutType string) (*WeightsLog, error) {
 		log.Printf("Error fetching exercises for weights log ID %d: %v", weightsLog.ID, err)
 		return nil, err
 	}
+
+	for i, exercise := range exercises {
+		var sets []Set
+		err = database.DB.Select(&sets, "SELECT * FROM exercise_sets WHERE exercise_id=$1 ORDER BY set_number", exercise.ID)
+		if err != nil {
+			log.Printf("Error fetching sets for exercise ID %d: %v", exercise.ID, err)
+			return nil, err
+		}
+		exercises[i].Sets = sets
+	}
+
 	log.Printf("Fetched exercises for weights log ID %d: %+v", weightsLog.ID, exercises)
 	weightsLog.Exercises = exercises
 
@@ -193,8 +242,15 @@ func UpdateWeightsLog(weightsLog WeightsLog) error {
 }
 
 func DeleteWeightsLog(id int) error {
+	// Delete related exercise sets
+	_, err := database.DB.Exec("DELETE FROM exercise_sets WHERE exercise_id IN (SELECT id FROM exercises WHERE weights_log_id = $1)", id)
+	if err != nil {
+		log.Printf("Error deleting related exercise sets: %v", err)
+		return err
+	}
+
 	// Delete related records in the exercises table
-	_, err := database.DB.Exec("DELETE FROM exercises WHERE weights_log_id = $1", id)
+	_, err = database.DB.Exec("DELETE FROM exercises WHERE weights_log_id = $1", id)
 	if err != nil {
 		log.Printf("Error deleting related exercises: %v", err)
 		return err
@@ -211,13 +267,13 @@ func DeleteWeightsLog(id int) error {
 
 // AddExercise adds a new exercise to the database
 func AddExercise(exercise Exercise) error {
-	_, err := database.DB.NamedExec(`INSERT INTO exercises (weights_log_id, name, set1, set2, set3) VALUES (:weights_log_id, :name, :set1, :set2, :set3)`, &exercise)
+	_, err := database.DB.NamedExec(`INSERT INTO exercises (weights_log_id, name) VALUES (:weights_log_id, :name)`, &exercise)
 	return err
 }
 
 // UpdateExercise updates an existing exercise in the database
 func UpdateExercise(exercise Exercise) error {
-	_, err := database.DB.NamedExec(`UPDATE exercises SET weights_log_id=:weights_log_id, name=:name, set1=:set1, set2=:set2, set3=:set3 WHERE id=:id`, &exercise)
+	_, err := database.DB.NamedExec(`UPDATE exercises SET weights_log_id=:weights_log_id, name=:name WHERE id=:id`, &exercise)
 	return err
 }
 
@@ -328,8 +384,15 @@ func EmptyWorkouts() error {
 }
 
 func EmptyWeightsLogs() error {
+	// Delete related exercise sets
+	_, err := database.DB.Exec("DELETE FROM exercise_sets")
+	if err != nil {
+		log.Printf("Error deleting related exercise sets: %v", err)
+		return err
+	}
+
 	// Delete related records in the exercises table
-	_, err := database.DB.Exec("DELETE FROM exercises WHERE weights_log_id IN (SELECT id FROM weights_logs)")
+	_, err = database.DB.Exec("DELETE FROM exercises")
 	if err != nil {
 		log.Printf("Error deleting related exercises: %v", err)
 		return err

@@ -6,9 +6,16 @@ import (
 	"momentum/internal/routes"
 	"net/http"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	// Load environment variables from .env file
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found, relying on environment variables")
+	}
+
 	// Check if the DATABASE_URL environment variable is set
 	connStr := os.Getenv("DATABASE_URL")
 	if connStr == "" {
@@ -27,8 +34,14 @@ func main() {
 		http.ServeFile(w, r, "web/style.css")
 	})
 
-	log.Println("Starting server on :8080")
-	if err := http.ListenAndServe(":8080", router); err != nil {
+	// Get port from environment or default to 8080
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Printf("Starting server on :%s", port)
+	if err := http.ListenAndServe(":"+port, router); err != nil {
 		log.Fatal(err)
 	}
 }

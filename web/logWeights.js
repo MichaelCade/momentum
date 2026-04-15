@@ -25,9 +25,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <thead>
                                 <tr>
                                     <th>Exercise</th>
-                                    <th>Set 1 Weight</th>
-                                    <th>Set 2 Weight</th>
-                                    <th>Set 3 Weight</th>
+                                    <th>Set 1 (kg x reps)</th>
+                                    <th>Set 2 (kg x reps)</th>
+                                    <th>Set 3 (kg x reps)</th>
                                 </tr>
                             </thead>
                             <tbody></tbody>
@@ -37,9 +37,18 @@ document.addEventListener('DOMContentLoaded', function() {
                             const row = document.createElement('tr');
                             row.innerHTML = `
                                 <td>${exercise.exercise}</td>
-                                <td><input type="number" name="${exercise.exercise}-set1" value="0"></td>
-                                <td><input type="number" name="${exercise.exercise}-set2" value="0"></td>
-                                <td><input type="number" name="${exercise.exercise}-set3" value="0"></td>
+                                <td>
+                                    <input type="number" name="${exercise.exercise}-set1-weight" placeholder="kg" style="width: 60px;"> x 
+                                    <input type="number" name="${exercise.exercise}-set1-reps" placeholder="reps" style="width: 60px;">
+                                </td>
+                                <td>
+                                    <input type="number" name="${exercise.exercise}-set2-weight" placeholder="kg" style="width: 60px;"> x 
+                                    <input type="number" name="${exercise.exercise}-set2-reps" placeholder="reps" style="width: 60px;">
+                                </td>
+                                <td>
+                                    <input type="number" name="${exercise.exercise}-set3-weight" placeholder="kg" style="width: 60px;"> x 
+                                    <input type="number" name="${exercise.exercise}-set3-reps" placeholder="reps" style="width: 60px;">
+                                </td>
                             `;
                             tbody.appendChild(row);
                         });
@@ -59,17 +68,27 @@ document.addEventListener('DOMContentLoaded', function() {
             const workoutType = formData.get('workout-type');
             const exercises = Array.from(document.querySelectorAll('#exercises tbody tr')).map(row => {
                 const exerciseName = row.querySelector('td').innerText;
+                const sets = [];
+                for (let i = 1; i <= 3; i++) {
+                    const weightVal = formData.get(`${exerciseName}-set${i}-weight`);
+                    const repsVal = formData.get(`${exerciseName}-set${i}-reps`);
+                    if (weightVal !== "" || repsVal !== "") {
+                        sets.push({
+                            weight: parseFloat(weightVal || 0),
+                            reps: parseInt(repsVal || 0, 10)
+                        });
+                    }
+                }
                 return {
                     name: exerciseName,
-                    set1: parseInt(formData.get(`${exerciseName}-set1`) || 0, 10),
-                    set2: parseInt(formData.get(`${exerciseName}-set2`) || 0, 10),
-                    set3: parseInt(formData.get(`${exerciseName}-set3`) || 0, 10)
+                    sets: sets
                 };
-            });
+            }).filter(ex => ex.sets.length > 0);
+
             const weightsLog = {
                 workout_type: workoutType,
                 exercises: exercises,
-                date: new Date().toISOString() // Set the current date and time
+                date: new Date().toISOString()
             };
             console.log('Logging weights workout:', weightsLog);
             fetch('/workout/log/weights', {

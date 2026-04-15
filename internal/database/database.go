@@ -53,13 +53,19 @@ func createSchema() {
         date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
+    -- Reconcile schema for weights logging (Safe as current counts are 0)
     CREATE TABLE IF NOT EXISTS exercises (
         id SERIAL PRIMARY KEY,
         weights_log_id INT REFERENCES weights_logs(id),
-        name VARCHAR(50),
-        set1 INT,
-        set2 INT,
-        set3 INT
+        name VARCHAR(50)
+    );
+
+    CREATE TABLE IF NOT EXISTS exercise_sets (
+        id SERIAL PRIMARY KEY,
+        exercise_id INT REFERENCES exercises(id),
+        set_number INT,
+        weight FLOAT,
+        reps INT
     );
 
     CREATE TABLE IF NOT EXISTS wods (
